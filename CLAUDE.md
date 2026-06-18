@@ -56,4 +56,26 @@ Two buyer-facing UIs were built on top of the same seller (`server.js`); they're
 - `render.yaml` — Render blueprint matching that split: `x402-book-seller` (Node web service running `server.js`, needs `PAY_TO_ADDRESS` set in Render's dashboard) and `x402-book-demo` (static site publishing `./site`). `PAY_TO_ADDRESS` is just a public wallet address (e.g. the address shown in MetaMask) — never a private key.
 - Validated the Render build/start path locally on 2026-06-17 via `git archive HEAD` into a clean temp dir, then `npm install --omit=dev` + `PORT=10000 PAY_TO_ADDRESS=... node server.js` with no `.env` file present — matches what Render's free Node web service actually runs. Catalog (`/books`), CORS preflight, and 402 gating on `/books/:id` and `/weather` all worked. Actual deploy (GitHub OAuth + Render dashboard) still needs to happen in the user's Render account — not something Claude can do directly.
 
+#### Deployed (2026-06-18)
+
+- Seller: https://x402-book-seller.onrender.com (Render web service, Node)
+- Static buyer site: https://vcn37-payment.onrender.com/ (Render static site — ended up named after the repo, not `x402-book-demo` as `render.yaml` assumed; cosmetic only, doesn't affect function)
+
+Issues hit during deploy, all fixed and pushed:
+- `render.yaml` had `plan: free` on the static site service — Render rejects `plan` on `env: static` services entirely (static sites are free by default, no plan field accepted). Caused the whole Blueprint apply to fail validation, so only the web service ended up created; the static site had to be added manually via Render's dashboard (New > Static Site, publish directory `site`, no build command).
+- Bare `GET /` on the seller returned Express's default "Cannot GET /" — not a bug, just no route defined for root. Added a small JSON index route listing the real endpoints, since people understandably poke at the bare seller URL first.
+- `git push` was rejected with `GH007` (GitHub's "would publish a private email address" protection) because commits were authored with `jjchong@msn.com` instead of the GitHub-verified noreply address. Fixed by setting **this repo's local** `git config user.email` to `35391764+jjchong5@users.noreply.github.com` (not global config) and amending the offending commits.
+
+#### Render free tier specifics (confirmed in production use, 2026-06-18)
+
+- Static sites: no spin-down, no observed cold start, no time limit under the current free tier — this is what serves the actual UI, so the demo "feels" always-on.
+- Web service (the seller): spins down after ~15 min idle, cold-starts on the next request. In practice this took up to ~90s and needed a couple of reloads to fully wake — worth warning anyone about to live-demo this on a bigscreen to hit the seller URL once a minute or two beforehand to warm it up.
+- Free tier pools 750 instance-hours/month across free services; a low-traffic demo won't get close to that since the sleep time doesn't count against it. No fixed expiration — ongoing free tier, not a trial, though Render could change policy in the future (no guarantee beyond "currently true").
+
+#### Path to real (mainnet) USDC, investigated but not built
+
+`server.js` never passes a `facilitator` option to `paymentMiddleware`, so x402-express defaults to `https://x402.org/facilitator` (community-hosted, free). Queried its `GET /supported` endpoint directly (no money/risk involved) and confirmed it **only lists testnets** — `base-sepolia` (`eip155:84532`), `solana-devnet`, `stellar:testnet`, `hedera:testnet`. No mainnet network is supported by the free community facilitator at all, on any chain. So:
+- The only mainnet-capable path already in this repo is `server.mainnet.js`, which uses `@coinbase/x402`'s hosted facilitator — requires a Coinbase CDP account (`CDP_API_KEY_ID`/`CDP_API_KEY_SECRET`).
+- Avoiding CDP entirely means **self-hosting a facilitator**: implement verify (check the buyer's EIP-3009 signature — the schemas already exist in `node_modules/x402`'s source, so it's adaptation, not from-scratch crypto) + settle (submit the transaction on-chain yourself, from a wallet you fund with real ETH for gas). Estimated a few hours for a rough demo-quality version, more like a day for something trustworthy with real money, mainly because "the service now holds funds and submits transactions" raises the security bar well past everything built so far. Not started — revisit this section if/when that's worth doing.
+
 Not yet implemented here: ERC-8004 identity/reputation check before serving, and the 30-second autonomous discover-pay-loop demoed live.

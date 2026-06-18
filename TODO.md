@@ -13,3 +13,6 @@
       gutendex.com) — explicitly deferred for now to keep the demo small.
 - [ ] Phase 2: wire `server.mainnet.js` for real-money payment once the
       testnet flow above is fully comfortable.
+- [ ] Add rate limiting / spend caps before any mainnet server holds a buyer
+      private key unattended (e.g. `demo/server.js`'s `BUYER_PRIVATE_KEY`
+      pattern) — see `plan-mainnet-costs.md` for the drain-risk math.

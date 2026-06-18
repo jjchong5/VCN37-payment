@@ -11,7 +11,8 @@ public-domain book back — no account, no login, no subscription.
 
 Open the hosted demo and connect a wallet (MetaMask or similar):
 
-- **Demo site**: _add your deployed static site URL here once deployed_
+- **Demo site**: https://vcn37-payment.onrender.com/
+- **Seller API** (used under the hood by the demo site): https://x402-book-seller.onrender.com — sleeps after ~15 min idle on Render's free tier, so the first request after inactivity can take up to ~90s to wake (the static demo site itself has no such delay)
 - You need: a browser wallet, switched to **Base Sepolia**, holding a small
   amount of testnet USDC. Get free testnet USDC from the
   [Circle USDC faucet](https://faucet.circle.com/) (select Base Sepolia).
@@ -88,9 +89,14 @@ Steps:
    that constant and redeploy, or just share the demo link with
    `?seller=https://your-actual-seller-url.onrender.com` appended.
 
-If Render's blueprint format has moved on since this was written, the
-manual fallback is two clicks: New Web Service (root dir, `npm install`,
-`node server.js`) and New Static Site (publish directory `site`).
+**Known issue**: Render rejects a `plan` field on `env: static` services
+(static sites are free by default and don't take a plan parameter) — if the
+Blueprint apply fails on `services[1].plan`, that's why. `render.yaml` here
+already has this fixed, but if you forked before that fix, just delete the
+`plan: free` line under the static site service. If the Blueprint apply
+fails partway through, it may create only the web service — in that case,
+add the static site manually: **New > Static Site**, same repo, publish
+directory `site`, no build command.
 
 The build/start commands were validated locally in a clean-room copy of
 exactly the git-tracked files (`git archive`), with `npm install --omit=dev`,
@@ -115,3 +121,14 @@ behaved correctly.
   demo here.
 - No ERC-8004 identity/reputation gating — anyone with a wallet and testnet
   USDC can buy.
+
+### Path to real USDC (investigated, not built)
+
+`server.js` defaults to the free community facilitator at
+`https://x402.org/facilitator`. Its `GET /supported` endpoint confirms it
+only settles **testnets** (`base-sepolia`, `solana-devnet`, `stellar:testnet`,
+`hedera:testnet`) — no mainnet network is supported there at all. Real USDC
+needs either Coinbase's CDP-hosted facilitator (the `server.mainnet.js`
+path, requires a CDP account) or self-hosting a facilitator (verify the
+buyer's signature + submit the settlement transaction yourself, from a
+wallet you fund with real gas) — see `CLAUDE.md` for the fuller writeup.
