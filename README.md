@@ -78,7 +78,10 @@ Steps:
 1. Push this repo to GitHub.
 2. In the Render dashboard: **New > Blueprint**, point it at your repo.
 3. Render will prompt for `PAY_TO_ADDRESS` (the wallet you want to receive
-   payments) — set it to your own address.
+   payments) — this is just a **public wallet address**, e.g. the address
+   shown in MetaMask (no private key, no seed phrase). It can be any EVM
+   address you control; it doesn't need to be funded ahead of time since
+   it's only ever receiving USDC.
 4. Once both services are live, note the seller's URL (e.g.
    `https://x402-book-seller.onrender.com`).
 5. If it doesn't match `DEFAULT_SELLER_URL` in `site/app.js`, either update
@@ -88,6 +91,12 @@ Steps:
 If Render's blueprint format has moved on since this was written, the
 manual fallback is two clicks: New Web Service (root dir, `npm install`,
 `node server.js`) and New Static Site (publish directory `site`).
+
+The build/start commands were validated locally in a clean-room copy of
+exactly the git-tracked files (`git archive`), with `npm install --omit=dev`,
+no `.env` file, and `PORT`/`PAY_TO_ADDRESS` passed as plain env vars — the
+same conditions Render runs under. Catalog, CORS, and the 402 paywall all
+behaved correctly.
 
 ### Notes on the free tier
 
