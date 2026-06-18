@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>x402 Pay-Per-Book Demo</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>📚 Pay-Per-Book Library</h1>
+    <p class="subtitle">An x402 micropayment paywall — agents pay 1¢ in USDC to read a book, no account needed.</p>
+    <button id="how-it-works-btn" class="ghost-btn">How does this work?</button>
+  </header>
+
+  <section id="how-it-works" class="panel hidden">
+    <h2>How x402 works, step by step</h2>
+    <ol>
+      <li>The buyer requests <code>GET /books/:id</code> with no payment attached.</li>
+      <li>The server replies <strong>HTTP 402 Payment Required</strong> with a JSON body describing the price, network, and address to pay.</li>
+      <li>The buyer's wallet signs an EIP-3009 USDC transfer authorization for that exact amount — <em>no gas needed from the buyer</em>, this is an off-chain signature.</li>
+      <li>The buyer retries the same request with an <code>X-PAYMENT</code> header carrying that signature.</li>
+      <li>The server verifies the signature, settles it on-chain (Base Sepolia here), and finally returns the book — with proof of the on-chain transaction in the response.</li>
+    </ol>
+    <p>This whole loop took under a second below. No login, no credit card, no subscription — just a wallet and a price.</p>
+  </section>
+
+  <section id="buyer-info" class="panel"></section>
+
+  <main>
+    <div id="catalog" class="grid"></div>
+  </main>
+
+  <section id="reader" class="panel hidden">
+    <button id="close-reader" class="ghost-btn">&larr; Back to library</button>
+    <h2 id="reader-title"></h2>
+    <p id="reader-author"></p>
+    <pre id="reader-text"></pre>
+  </section>
+
+  <div id="status-overlay" class="hidden">
+    <div id="status-box">
+      <div id="status-spinner"></div>
+      <p id="status-text"></p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

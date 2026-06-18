@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: x402-book-seller
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: PAY_TO_ADDRESS
+        sync: false
+
+  - type: web
+    name: x402-book-demo
+    env: static
+    plan: free
+    staticPublishPath: ./site

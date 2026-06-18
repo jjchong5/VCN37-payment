@@ -1,0 +1,27 @@
+{
+  "name": "vcn37-paywall",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "node server.js",
+    "demo": "node demo/server.js",
+    "fetch-books": "node scripts/fetch-books.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@coinbase/x402": "^2.1.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "x402-express": "^1.2.0"
+  },
+  "devDependencies": {
+    "viem": "^2.52.2",
+    "x402-fetch": "^1.2.0"
+  }
+}
