@@ -75,6 +75,18 @@ app.use(
   })
 );
 
+app.get("/", (req, res) => {
+  res.json({
+    name: "x402 Pay-Per-Book Library — seller API",
+    endpoints: {
+      "GET /books": "free catalog listing",
+      "GET /books/:id": "$0.01 USDC on base-sepolia, returns the book text",
+      "GET /weather": "$0.001 USDC on base-sepolia, returns a stub weather payload",
+    },
+    frontend: "https://x402-book-demo.onrender.com",
+  });
+});
+
 app.get("/weather", (req, res) => {
   res.json({
     location: "San Francisco",
